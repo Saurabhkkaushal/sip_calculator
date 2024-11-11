@@ -1,0 +1,112 @@
+<h1>SIP Return Calculator</h1>
+
+<%= form_with model: @sip_investment, local: true, data: { turbo: false } do |form| %>
+  <div>
+    <%= form.label :principal, "Monthly Contribution (₹)" %>
+    <%= form.number_field :principal, step: 1, placeholder: "Enter monthly SIP amount", value: @sip_investment.principal || 10000, min: 1, max: 500000 %>
+    <% if @sip_investment.errors[:principal].any? %>
+      <div class="error-message"><%= @sip_investment.errors[:principal].join(', ') %></div>
+    <% end %>
+  </div>
+
+  <div>
+    <%= form.label :rate_of_return, "Expected Annual Rate of Return (%)" %>
+    <%= form.number_field :rate_of_return, step: 0.1, placeholder: "e.g., 15", value: @sip_investment.rate_of_return || 12, min: 1, max: 30 %>
+    <% if @sip_investment.errors[:rate_of_return].any? %>
+      <div class="error-message"><%= @sip_investment.errors[:rate_of_return].join(', ') %></div>
+    <% end %>
+  </div>
+
+  <div>
+    <%= form.label :duration, "Investment Duration (Years)" %>
+    <%= form.number_field :duration, placeholder: "e.g., 30", value: @sip_investment.duration || 10, min: 1, max: 40 %>
+    <% if @sip_investment.errors[:duration].any? %>
+      <div class="error-message"><%= @sip_investment.errors[:duration].join(', ') %></div>
+    <% end %>
+  </div>
+
+  <%= form.fields_for :inflation_adjustment do |inflation_form| %>
+    <div>
+      <%= inflation_form.label :annual_rate, "Annual Inflation Rate (%)" %>
+      <%= inflation_form.number_field :annual_rate, step: 0.1, placeholder: "e.g., 6", value: inflation_form.object.annual_rate || 6, min: 3, max: 10 %>
+      <% if inflation_form.object.errors[:annual_rate].any? %>
+        <div class="error-message"><%= inflation_form.object.errors[:annual_rate].join(', ') %></div>
+      <% end %>
+    </div>
+  <% end %>
+
+  <div>
+    <%= form.label :yearly_step_up_percentage, "Yearly Step-Up Percentage (%)" %>
+    <%= form.number_field :yearly_step_up_percentage, step: 0.1, placeholder: "e.g., 10", value: @sip_investment.yearly_step_up_percentage || 10, max: 50 %>
+    <% if @sip_investment.errors[:yearly_step_up_percentage].any? %>
+      <div class="error-message"><%= @sip_investment.errors[:yearly_step_up_percentage].join(', ') %></div>
+    <% end %>
+  </div>
+
+  <%= form.submit "Calculate SIP Return" %>
+<% end %>
+
+<!-- Pie Chart Container -->
+<div id="chart-container" style="width: 50%; height: 400px;">
+  <canvas id="investment-chart"></canvas>
+</div>
+
+<% if @calculated_return.present? %>
+  <div>
+    <h1>SIP Return Calculation Result</h1>
+
+    <p><strong>Monthly Contribution:</strong> ₹<%= @sip_investment.principal %></p>
+    <p><strong>Annual Rate of Return:</strong> <%= @sip_investment.rate_of_return %> %</p>
+    <p><strong>Investment Duration:</strong> <%= @sip_investment.duration %> years</p>
+    <p><strong>Inflation Rate:</strong> <%= @sip_investment.inflation_adjustment.annual_rate %> %</p>
+    <p><strong>Yearly Step-Up Percentage (%):</strong> <%= @sip_investment.yearly_step_up_percentage %> %</p>
+
+    <h2>Total Return after <%= @sip_investment.duration %> years: ₹<%= number_to_currency(@calculated_return, unit: '', precision: 2) %></h2>
+
+    <p><strong>Total Return in Words:</strong> <%= @sip_investment.total_return_in_words %></p>
+  </div>
+  <%= link_to "Calculate Again", new_sip_investment_path %>
+<% end %>
+
+<script>
+    <% if @calculated_return.present? %>
+    // Get investment and returns data from the form
+    const principal = <%= @sip_investment.principal %> * <%= @sip_investment.duration %> * 12;
+    const total_return = <%= @calculated_return %>;
+    const returns = total_return - principal ;
+
+    // Create data for the pie chart
+    const data = {
+        labels: ['Principal', 'Returns'],
+        datasets: [{
+            label: 'Investment and Returns',
+            data: [principal, returns],
+            backgroundColor: ['#FF6347', '#4CAF50'], // Colors for the pie chart
+            borderColor: ['#FF6347', '#4CAF50'],
+            borderWidth: 1
+        }]
+    };
+
+    // Create and render the pie chart
+    const ctx = document.getElementById('investment-chart').getContext('2d');
+    new Chart(ctx, {
+        type: 'pie',
+        data: data,
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'top',
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(tooltipItem) {
+                            return tooltipItem.label + ': ₹' + tooltipItem.raw.toLocaleString();
+                        }
+                    }
+                }
+            }
+        }
+    });
+    <% end %>
+</script>

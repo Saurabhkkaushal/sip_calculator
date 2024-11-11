@@ -1,0 +1,14 @@
+<!-- app/views/sip_investments/show.html.erb -->
+<h1>SIP Return Calculation Result</h1>
+
+<p><strong>Monthly Contribution:</strong> ₹<%= @sip_investment.principal %></p>
+<p><strong>Annual Rate of Return:</strong> <%= @sip_investment.rate_of_return %> %</p>
+<p><strong>Investment Duration:</strong> <%= @sip_investment.duration %> years</p>
+<p><strong>Inflation Rate:</strong> <%= @sip_investment.inflation_adjustment.annual_rate %> %</p>
+<p><strong>Yearly Step-Up Percentage (%):</strong> <%= @sip_investment.inflation_adjustment.annual_rate %> %</p>
+
+<h2>Total Return after <%= @sip_investment.duration %> years: ₹<%= number_to_currency(@calculated_return, unit: '', precision: 2) %></h2>
+
+<p><strong>Total Return in Words:</strong> <%= @sip_investment.total_return_in_words %></p>
+
+<%= link_to "Calculate Again", new_sip_investment_path %>

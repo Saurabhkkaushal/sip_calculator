@@ -1,0 +1,11 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  principal: 9.99
+  rate_of_return: 9.99
+  duration: 1
+
+two:
+  principal: 9.99
+  rate_of_return: 9.99
+  duration: 1

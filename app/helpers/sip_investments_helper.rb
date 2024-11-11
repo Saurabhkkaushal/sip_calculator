@@ -1,0 +1,2 @@
+module SipInvestmentsHelper
+end
